@@ -1,6 +1,6 @@
 {
   "name": "@charlietango/react-wrap-balancer",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Better text wrapping.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -33,8 +33,5 @@
   },
   "peerDependencies": {
     "react": "^18.0.0"
-  },
-  "dependencies": {
-    "terser": "^5.16.3"
   }
 }
