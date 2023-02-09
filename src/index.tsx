@@ -1,158 +1,149 @@
-'use client'
+"use client";
 
-import React from 'react'
+import React from "react";
 
-const SYMBOL_KEY = '__wrap_b'
-const SYMBOL_OBSERVER_KEY = '__wrap_o'
-const IS_SERVER = typeof window === 'undefined'
-const useIsomorphicLayoutEffect = IS_SERVER
-  ? React.useEffect
-  : React.useLayoutEffect
+const useIsomorphicLayoutEffect =
+  typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
 
 interface WrapperElement extends HTMLElement {
-  [SYMBOL_OBSERVER_KEY]?: ResizeObserver | undefined
+  __observer?: ResizeObserver | undefined;
 }
 
 type RelayoutFn = (
   id: string | number,
   ratio: number,
   wrapper?: WrapperElement
-) => void
+) => void;
 
 declare global {
   interface Window {
-    [SYMBOL_KEY]: RelayoutFn
+    __relayoutText: RelayoutFn;
   }
 }
 
-const relayout: RelayoutFn = (id, ratio, wrapper) => {
+export const relayout: RelayoutFn = (id, ratio, wrapper) => {
   wrapper =
-    wrapper || document.querySelector<WrapperElement>(`[data-br="${id}"]`)
-  const container = wrapper.parentElement
+    wrapper || document.querySelector<WrapperElement>(`[data-br="${id}"]`);
+  const container = wrapper.parentElement;
 
-  const update = (width: number) => (wrapper.style.maxWidth = width + 'px')
+  const update = (width: number) => (wrapper.style.maxWidth = width + "px");
 
   // Reset wrapper width
-  wrapper.style.maxWidth = ''
+  wrapper.style.maxWidth = "";
 
   // Get the initial container size
-  const width = container.clientWidth
-  const height = container.clientHeight
+  const width = container.clientWidth;
+  const height = container.clientHeight;
 
   // Synchronously do binary search and calculate the layout
-  let lower: number = width / 2 - 0.25
-  let upper: number = width + 0.5
-  let middle: number
+  let lower: number = width / 2 - 0.25;
+  let upper: number = width + 0.5;
+  let middle: number;
 
   if (width) {
     while (lower + 1 < upper) {
-      middle = Math.round((lower + upper) / 2)
-      update(middle)
+      middle = Math.round((lower + upper) / 2);
+      update(middle);
       if (container.clientHeight === height) {
-        upper = middle
+        upper = middle;
       } else {
-        lower = middle
+        lower = middle;
       }
     }
 
     // Update the wrapper width
-    update(upper * ratio + width * (1 - ratio))
+    update(upper * ratio + width * (1 - ratio));
   }
 
   // Create a new observer if we don't have one.
   // Note that we must inline the key here as we use `toString()` to serialize
   // the function.
-  if (!wrapper['__wrap_o']) {
-    ;(wrapper['__wrap_o'] = new ResizeObserver(() => {
-      self.__wrap_b(0, +wrapper.dataset.brr, wrapper)
-    })).observe(container)
+  if (!wrapper["__observer"]) {
+    (wrapper["__observer"] = new ResizeObserver(() => {
+      self.__relayoutText(0, +wrapper.dataset.brr, wrapper);
+    })).observe(container);
   }
+};
+
+export function relayoutScriptCode() {
+  return `self.__relayoutText=${relayout.toString()}`;
 }
 
-const RELAYOUT_STR = relayout.toString()
+export function RelayoutScript() {
+  return (
+    <script
+      data-relayout=""
+      dangerouslySetInnerHTML={{
+        __html: relayoutScriptCode(),
+      }}
+    />
+  );
+}
 
-const createScriptElement = (injected: boolean, suffix: string = '') => (
-  <script
-    suppressHydrationWarning
-    dangerouslySetInnerHTML={{
-      // Calculate the balance initially for SSR
-      __html: (injected ? '' : `self.${SYMBOL_KEY}=${RELAYOUT_STR};`) + suffix,
-    }}
-  />
-)
+/**
+ * Initialize the relayout function for the client. You only need to call this, if you haven't added the `relayoutScript()` HTML to the `<head>`.
+ */
+export function initWrapBalancer() {
+  if (!window.__relayoutText) window.__relayoutText = relayout;
+}
 
 interface BalancerProps extends React.HTMLAttributes<HTMLElement> {
   /**
    * The HTML tag to use for the wrapper element.
    * @default 'span'
    */
-  as?: React.ElementType
+  as?: React.ElementType;
   /**
    * The balance ratio of the wrapper width (0 <= ratio <= 1).
    * 0 means the wrapper width is the same as the container width (no balance, browser default).
    * 1 means the wrapper width is the minimum (full balance, most compact).
    * @default 1
    */
-  ratio?: number
-  children?: React.ReactNode
-}
-
-/**
- * An optional provider to inject the global relayout function, so all children
- * Balancer components can share it.
- */
-const BalancerContext = React.createContext<boolean>(false)
-const Provider: React.FC<{
-  children?: React.ReactNode
-}> = ({ children }) => {
-  return (
-    <BalancerContext.Provider value={true}>
-      {createScriptElement(false)}
-      {children}
-    </BalancerContext.Provider>
-  )
+  ratio?: number;
+  children?: React.ReactNode;
 }
 
 const Balancer: React.FC<BalancerProps> = ({
-  as: Wrapper = 'span',
-  ratio = 1,
+  as: Wrapper = "span",
+  ratio = 0.75,
   children,
   ...props
 }) => {
-  const id = React.useId()
-  const wrapperRef = React.useRef<WrapperElement>()
-  const hasProvider = React.useContext(BalancerContext)
+  const id = React.useId();
+  const wrapperRef = React.useRef<
+    HTMLElement & { __observer?: ResizeObserver }
+  >();
 
   // Re-balance on content change and on mount/hydration.
   useIsomorphicLayoutEffect(() => {
-    if (wrapperRef.current) {
-      // Re-assign the function here as the component can be dynamically rendered, and script tag won't work in that case.
-      ;(self[SYMBOL_KEY] = relayout)(0, ratio, wrapperRef.current)
+    if (window.__relayoutText) {
+      window.__relayoutText(0, ratio, wrapperRef.current);
     }
-  }, [children, ratio])
+  }, [children, ratio]);
 
   // Remove the observer when unmounting.
   useIsomorphicLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
     return () => {
-      if (!wrapperRef.current) return
+      if (wrapper) {
+        const resizeObserver = wrapper.__observer;
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+          delete wrapper.__observer;
+        }
+      }
+    };
+  }, []);
 
-      const resizeObserver = wrapperRef.current[SYMBOL_OBSERVER_KEY]
-      if (!resizeObserver) return
-
-      resizeObserver.disconnect()
-      delete wrapperRef.current[SYMBOL_OBSERVER_KEY]
-    }
-  }, [])
-
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     // In development, we check `children`'s type to ensure we are not wrapping
     // elements like <p> or <h1> inside. Instead <Balancer> should directly
     // wrap text nodes.
-    if (children && !Array.isArray(children) && typeof children === 'object') {
+    if (children && !Array.isArray(children) && typeof children === "object") {
       if (
-        'type' in children &&
-        typeof children.type === 'string' &&
-        children.type !== 'span'
+        "type" in children &&
+        typeof children.type === "string" &&
+        children.type !== "span"
       ) {
         console.warn(
           `<Balancer> should not wrap <${children.type}> inside. Instead, it should directly wrap text or inline nodes.
@@ -161,7 +152,7 @@ Try changing this:
   <Balancer><${children.type}>content</${children.type}></Balancer>
 To:
   <${children.type}><Balancer>content</Balancer></${children.type}>`
-        )
+        );
       }
     }
   }
@@ -174,45 +165,21 @@ To:
         data-brr={ratio}
         ref={wrapperRef}
         style={{
-          display: 'inline-block',
-          verticalAlign: 'top',
-          textDecoration: 'inherit',
+          display: "inline-block",
+          verticalAlign: "top",
         }}
         suppressHydrationWarning
       >
         {children}
       </Wrapper>
-      {createScriptElement(hasProvider, `self.${SYMBOL_KEY}("${id}",${ratio})`)}
+      <script
+        dangerouslySetInnerHTML={{
+          // Calculate the balance initially for SSR
+          __html: `window.__relayoutText("${id}",${ratio})`,
+        }}
+      />
     </>
-  )
-}
+  );
+};
 
-// As Next.js adds `display: none` to `body` for development, we need to trigger
-// a re-balance right after the style is removed, synchronously.
-if (!IS_SERVER && process.env.NODE_ENV !== 'production') {
-  const next_dev_style = document.querySelector<HTMLElement>(
-    '[data-next-hide-fouc]'
-  )
-  if (next_dev_style) {
-    const callback: MutationCallback = (mutationList) => {
-      for (const mutation of mutationList) {
-        for (const node of Array.from(mutation.removedNodes)) {
-          if (node !== next_dev_style) continue
-
-          observer.disconnect()
-          const elements =
-            document.querySelectorAll<WrapperElement>('[data-br]')
-
-          for (const element of Array.from(elements)) {
-            self[SYMBOL_KEY](0, +element.dataset.brr, element)
-          }
-        }
-      }
-    }
-    const observer = new MutationObserver(callback)
-    observer.observe(document.head, { childList: true })
-  }
-}
-
-export default Balancer
-export { Provider }
+export default Balancer;

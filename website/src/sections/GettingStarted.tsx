@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import Balancer from 'react-wrap-balancer'
+import Balancer from '@charlietango/react-wrap-balancer'
 import copy from 'copy-to-clipboard'
 
 import BlankLink from '../components/BlankLink'
@@ -87,7 +87,7 @@ export default function GettingStarted() {
           <span className='code'>{`<Balancer>`}</span>:
         </span>
         <code>
-          {highlightedCode`import ${'Balancer'} from ${"'react-wrap-balancer'"}\n\n// ...\n\n<h1>\n  ${'<Balancer>My Title</Balancer>'}\n</h1>`}
+          {highlightedCode`import ${'Balancer'} from ${"'@charlietango/react-wrap-balancer'"}\n\n// ...\n\n<h1>\n  ${'<Balancer>My Title</Balancer>'}\n</h1>`}
         </code>
         <span>
           If you have multiple <span className='code'>{`<Balancer>`}</span>{' '}
@@ -97,7 +97,7 @@ export default function GettingStarted() {
           size:
         </span>
         <code>
-          {highlightedCode`import { ${'Provider'} } from ${"'react-wrap-balancer'"}\n\n// ...\n\n${'<Provider>'}\n  <App/>\n${'</Provider>'}`}
+          {highlightedCode`import { ${'Provider'} } from ${"'@charlietango/react-wrap-balancer'"}\n\n// ...\n\n${'<Provider>'}\n  <App/>\n${'</Provider>'}`}
         </code>
       </p>
       <div className='p'>

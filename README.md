@@ -1,62 +1,57 @@
-[![React Wrap Balancer - Simple React Component That Makes Titles More Readable](.github/card.png)](https://react-wrap-balancer.vercel.app)
-
 ## Introduction
 
-[**React Wrap Balancer**](https://react-wrap-balancer.vercel.app) is a simple React Component that makes your titles more readable in different viewport sizes. It improves the wrapping to avoid situations like single word in the last line, makes the content more “balanced”:
+This is a fork of [react-wrap-balancer](https://github.com/shuding/react-wrap-balancer), that focuses on integrating it into micro-frontend React SSR applications.
+The original implementations, works great for Next.js applications - But if we have multiply instances of React, then the `<Provider>` pattern isn't ideal.
 
-![](.github/demo.gif)
+This fork, uses a different approach, where a `<RelayoutScript>` element is used to inject the `<script>` tag in `<head>`, so the `<Provider>` is no longer needed.
+
+If
 
 ## Usage
 
 To start using the library, install it to your project:
 
 ```bash
-npm i react-wrap-balancer
+npm i @charlietango/react-wrap-balancer
 ```
 
-And wrap text content with it:
+Inject the `relayoutScript()` function in your HTML template:
+
+```tsx
+const html = () => (
+  <html>
+    <head>
+      <title>App</title>
+      <RelayoutScript />
+    </head>
+    <body>
+      <div id="root" />
+    </body>
+  </html>
+);
+```
+
+And wrap text content with the `<Balancer>` component:
 
 ```jsx
-import Balancer from 'react-wrap-balancer'
-
-// ...
+import Balancer from "@charlietango/react-wrap-balancer";
 
 function Title() {
   return (
     <h1>
       <Balancer>My Awesome Title</Balancer>
     </h1>
-  )
+  );
 }
 ```
 
-If you have multiple `<Balancer>` components used, it’s recommended (but optional) to also use
-`<Provider>` to wrap the entire app. This will make them share the re-balance logic and reduce the HTML size:
+### Client-side only
+
+To make it work with Storybook or tests, you can initialize the relayout function
+only on the client-side. This needs happen before you initialize the React components.
 
 ```jsx
-import { Provider } from 'react-wrap-balancer'
+import { initWrapBalancer } from "@charlietango/react-wrap-balancer";
 
-// ...
-
-function App() {
-  return (
-    <Provider>
-      <MyApp/>
-    </Provider>
-  )
-}
+initWrapBalancer();
 ```
-
-For full documentation and use cases, please visit [**react-wrap-balancer.vercel.app**](https://react-wrap-balancer.vercel.app).
-
-## About
-
-This project was inspired by Adobe’s [balance-text](https://github.com/adobe/balance-text) project, NYT’s [text-balancer](https://github.com/nytimes/text-balancer) project, and Daniel Aleksandersen’s [Improving the New York Times’ line wrap balancer](https://www.ctrl.blog/entry/text-wrap-balance.html). If you want to learn more, you can also take a look at the [text-wrap: balance](https://drafts.csswg.org/css-text-4/#text-wrap) proposal.
-
-Special thanks to [Emil Kowalski](https://twitter.com/emilkowalski_) for testing and feedback.
-
-Created by [Shu Ding](https://twitter.com/shuding_) in 2022, released under the MIT license.
-
-<a aria-label="Vercel logo" href="https://vercel.com">
-  <img src="https://badgen.net/badge/icon/Made%20by%20Vercel?icon=zeit&label&color=black&labelColor=black">
-</a>
