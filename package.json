@@ -20,8 +20,9 @@
     "text",
     "typography"
   ],
-  "author": "Shu Ding <g@shud.in>",
+  "author": "Daniel Schmidt <dsc@charlietango.dk>",
   "license": "MIT",
+  "homepage": "https://github.com/charlie-tango/react-wrap-balancer",
   "devDependencies": {
     "@types/node": "^18.11.13",
     "@types/react": "^18.0.26",
