@@ -1,6 +1,6 @@
 {
   "name": "@charlietango/react-wrap-balancer",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Better text wrapping.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.tsx",
+    "prepublish": "tsup src/index.tsx",
     "dev": "tsup src/index.tsx --watch",
     "dev:website": "turbo run dev --filter=website..."
   },
