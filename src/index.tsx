@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 const useIsomorphicLayoutEffect =
@@ -101,7 +103,7 @@ interface BalancerProps extends React.HTMLAttributes<HTMLElement> {
   children?: React.ReactNode;
 }
 
-const Balancer: React.FC<BalancerProps> = ({
+export const Balancer: React.FC<BalancerProps> = ({
   as: Wrapper = "span",
   ratio = 0.75,
   children,
@@ -179,5 +181,3 @@ To:
     </>
   );
 };
-
-export default Balancer;
