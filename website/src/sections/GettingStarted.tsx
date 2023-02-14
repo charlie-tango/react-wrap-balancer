@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import Balancer from '@charlietango/react-wrap-balancer'
+import { Balancer } from '@charlietango/react-wrap-balancer'
 import copy from 'copy-to-clipboard'
 
 import BlankLink from '../components/BlankLink'

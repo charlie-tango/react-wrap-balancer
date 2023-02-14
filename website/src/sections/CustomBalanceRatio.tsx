@@ -2,7 +2,7 @@
 
 import { useSpring } from '@react-spring/web'
 import { useState } from 'react'
-import Balancer from '@charlietango/react-wrap-balancer'
+import { Balancer } from '@charlietango/react-wrap-balancer'
 
 export default function CustomBalanceRatio() {
   const [ratio, setRatio] = useState<number>(0.65)

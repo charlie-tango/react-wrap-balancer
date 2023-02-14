@@ -1,6 +1,6 @@
 'use client'
 
-import Balancer from '@charlietango/react-wrap-balancer'
+import { Balancer } from '@charlietango/react-wrap-balancer'
 
 import Comparison from '../components/Comparison'
 import Content from '../components/Content'

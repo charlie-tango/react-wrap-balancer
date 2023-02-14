@@ -34,7 +34,7 @@ const html = () => (
 And wrap text content with the `<Balancer>` component:
 
 ```jsx
-import Balancer from "@charlietango/react-wrap-balancer";
+import { Balancer } from "@charlietango/react-wrap-balancer";
 
 function Title() {
   return (

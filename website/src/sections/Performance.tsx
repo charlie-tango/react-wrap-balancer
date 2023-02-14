@@ -1,6 +1,6 @@
 'use client'
 
-import Balancer from '@charlietango/react-wrap-balancer'
+import { Balancer } from '@charlietango/react-wrap-balancer'
 
 import BlankLink from '../components/BlankLink'
 
