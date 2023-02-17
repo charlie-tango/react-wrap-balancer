@@ -18,6 +18,8 @@ npm i @charlietango/react-wrap-balancer
 Inject the `relayoutScript()` function in your HTML template:
 
 ```tsx
+import { RelayoutScript } from '@charlietango/react-wrap-balancer'
+
 const html = () => (
   <html>
     <head>
@@ -31,7 +33,26 @@ const html = () => (
 );
 ```
 
-And wrap text content with the `<Balancer>` component:
+If you are rendering HTML as a plain string, then you can inject the just the script code:
+
+```ts
+import { relayoutScriptCode } from '@charlietango/react-wrap-balancer'
+
+const html = `
+  <html>
+    <head>
+      <title>App</title>
+      <script>${relayoutScriptCode}</script>
+    </head>
+    <body>
+      <div id="root" />
+    </body>
+  </html>
+`
+
+### `<Balancer>`
+
+Wrap text content with the `<Balancer>` component, and the balancer logic will kick in:
 
 ```jsx
 import { Balancer } from "@charlietango/react-wrap-balancer";
