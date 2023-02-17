@@ -49,6 +49,7 @@ const html = `
     </body>
   </html>
 `
+```
 
 ### `<Balancer>`
 
