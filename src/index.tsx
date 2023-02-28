@@ -63,8 +63,15 @@ export const relayout: RelayoutFn = (id, ratio, wrapper) => {
   }
 };
 
+/**
+ * Pre-minified version of the `relayout` function. This allows the code to be used with `tsx`, that would otherwise break the minified code, because it doesn't `--keep-names`.
+ * If the `relayout()` is changed, this must be updated as well - Grab the output from the compiled `dist/index.js`.
+ */
+export const staticRelayout =
+  '(c,n,e)=>{e=e||document.querySelector(`[data-br="${c}"]`);let o=e.parentElement,s=d=>e.style.maxWidth=d+"px";e.style.maxWidth="";let r=o.clientWidth,i=o.clientHeight,a=r/2-.25,l=r+.5,u;if(r){for(;a+1<l;)u=Math.round((a+l)/2),s(u),o.clientHeight===i?l=u:a=u;s(l*n+r*(1-n))}e.__observer||(e.__observer=new ResizeObserver(()=>{self.__relayoutText(0,+e.dataset.brr,e)})).observe(o)}';
+
 export function relayoutScriptCode() {
-  return `self.__relayoutText=${relayout.toString()}`;
+  return `self.__relayoutText=${staticRelayout}`;
 }
 
 export function RelayoutScript() {
