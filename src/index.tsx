@@ -3,8 +3,12 @@ import React from "react";
 const useIsomorphicLayoutEffect =
   typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
 
+const SYMBOL_KEY = "__relayoutText";
+const SYMBOL_NATIVE_KEY = "__wrap_n";
+const SYMBOL_OBSERVER_KEY = "__wrap_o";
+
 interface WrapperElement extends HTMLElement {
-  __observer?: ResizeObserver | undefined;
+  [SYMBOL_OBSERVER_KEY]?: ResizeObserver | undefined;
 }
 
 type RelayoutFn = (
@@ -15,7 +19,12 @@ type RelayoutFn = (
 
 declare global {
   interface Window {
-    __relayoutText: RelayoutFn;
+    [SYMBOL_KEY]: RelayoutFn;
+    // A flag to indicate whether the browser supports text-balancing natively.
+    // undefined: not injected
+    // 1: injected and supported
+    // 2: injected but not supported
+    [SYMBOL_NATIVE_KEY]?: number;
   }
 }
 
@@ -39,6 +48,10 @@ export const relayout: RelayoutFn = (id, ratio, wrapper) => {
   let middle: number;
 
   if (width) {
+    // Ensure we don't search widths lower than when the text overflows
+    update(lower);
+    lower = Math.max(wrapper.scrollWidth, lower);
+
     while (lower + 1 < upper) {
       middle = Math.round((lower + upper) / 2);
       update(middle);
@@ -56,15 +69,18 @@ export const relayout: RelayoutFn = (id, ratio, wrapper) => {
   // Create a new observer if we don't have one.
   // Note that we must inline the key here as we use `toString()` to serialize
   // the function.
-  if (!wrapper["__observer"]) {
-    (wrapper["__observer"] = new ResizeObserver(() => {
+  if (!wrapper["__wrap_o"] && typeof ResizeObserver !== "undefined") {
+    (wrapper["__wrap_o"] = new ResizeObserver(() => {
       self.__relayoutText(0, +wrapper.dataset.brr, wrapper);
     })).observe(container);
   }
 };
 
+// Check for Text Wrap Balance support. Return '1' if supported, '2' if not.
+const isTextWrapBalanceSupported = `(self.CSS&&CSS.supports("text-wrap","balance")?1:2)`;
+
 export function relayoutScriptCode() {
-  return `self.__relayoutText=${relayout.toString()}`;
+  return `self.${SYMBOL_NATIVE_KEY}=self.${SYMBOL_NATIVE_KEY}||${isTextWrapBalanceSupported};self.${SYMBOL_KEY}=${relayout.toString()}`;
 }
 
 export function RelayoutScript() {
@@ -82,7 +98,7 @@ export function RelayoutScript() {
  * Initialize the relayout function for the client. You only need to call this, if you haven't added the `relayoutScript()` HTML to the `<head>`.
  */
 export function initWrapBalancer() {
-  if (!window.__relayoutText) window.__relayoutText = relayout;
+  if (!window[SYMBOL_KEY]) window[SYMBOL_KEY] = relayout;
 }
 
 interface BalancerProps extends React.HTMLAttributes<HTMLElement> {
@@ -109,25 +125,28 @@ export const Balancer: React.FC<BalancerProps> = ({
 }) => {
   const id = React.useId();
   const wrapperRef = React.useRef<
-    HTMLElement & { __observer?: ResizeObserver }
+    HTMLElement & { [SYMBOL_OBSERVER_KEY]?: ResizeObserver }
   >();
 
   // Re-balance on content change and on mount/hydration.
   useIsomorphicLayoutEffect(() => {
-    if (window.__relayoutText) {
-      window.__relayoutText(0, ratio, wrapperRef.current);
+    if (self[SYMBOL_NATIVE_KEY] === 1) return;
+    if (window[SYMBOL_KEY]) {
+      window[SYMBOL_KEY](0, ratio, wrapperRef.current);
     }
   }, [children, ratio]);
 
   // Remove the observer when unmounting.
   useIsomorphicLayoutEffect(() => {
+    if (self[SYMBOL_NATIVE_KEY] === 1) return;
+
     const wrapper = wrapperRef.current;
     return () => {
       if (wrapper) {
-        const resizeObserver = wrapper.__observer;
+        const resizeObserver = wrapper[SYMBOL_OBSERVER_KEY];
         if (resizeObserver) {
           resizeObserver.disconnect();
-          delete wrapper.__observer;
+          delete wrapper[SYMBOL_OBSERVER_KEY];
         }
       }
     };
@@ -165,6 +184,7 @@ To:
         style={{
           display: "inline-block",
           verticalAlign: "top",
+          textWrap: "balance",
         }}
         suppressHydrationWarning
       >
@@ -173,7 +193,7 @@ To:
       <script
         dangerouslySetInnerHTML={{
           // Calculate the balance initially for SSR
-          __html: `window.__relayoutText("${id}",${ratio})`,
+          __html: `window.${SYMBOL_KEY}("${id}",${ratio})`,
         }}
       />
     </>
