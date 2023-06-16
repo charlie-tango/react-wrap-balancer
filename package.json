@@ -25,13 +25,13 @@
   "license": "MIT",
   "homepage": "https://github.com/charlie-tango/react-wrap-balancer",
   "devDependencies": {
-    "@types/node": "^18.11.13",
-    "@types/react": "^18.0.26",
-    "prettier": "^2.8.3",
+    "@types/node": "^20.3.1",
+    "@types/react": "^18.2.12",
+    "prettier": "^2.8.8",
     "react": "^18.2.0",
-    "tsup": "^6.4.0",
-    "turbo": "^1.6.3",
-    "typescript": "^4.8.4"
+    "tsup": "^6.7.0",
+    "turbo": "^1.10.3",
+    "typescript": "^5.1.3"
   },
   "peerDependencies": {
     "react": "^18.0.0"
