@@ -24,6 +24,10 @@
   "author": "Daniel Schmidt <dsc@charlietango.dk>",
   "license": "MIT",
   "homepage": "https://github.com/charlie-tango/react-wrap-balancer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/charlie-tango/react-wrap-balancer.git"
+  },
   "devDependencies": {
     "@types/node": "^20.3.1",
     "@types/react": "^18.2.12",
