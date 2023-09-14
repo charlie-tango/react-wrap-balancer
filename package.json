@@ -29,13 +29,13 @@
     "url": "https://github.com/charlie-tango/react-wrap-balancer.git"
   },
   "devDependencies": {
-    "@types/node": "^20.3.1",
-    "@types/react": "^18.2.12",
-    "prettier": "^2.8.8",
+    "@types/node": "^20.6.0",
+    "@types/react": "^18.2.21",
+    "prettier": "^3.0.3",
     "react": "^18.2.0",
-    "tsup": "^6.7.0",
-    "turbo": "^1.10.3",
-    "typescript": "^5.1.3"
+    "tsup": "^7.2.0",
+    "turbo": "^1.10.13",
+    "typescript": "^5.2.2"
   },
   "peerDependencies": {
     "react": "^18.0.0"

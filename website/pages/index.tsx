@@ -1,5 +1,5 @@
 import Section from "../src/sections";
-import {Alice, Inter} from "@next/font/google";
+import {Alice, Inter} from "next/font/google";
 import clsx from "clsx";
 const inter = Inter({
     weight: "variable",
